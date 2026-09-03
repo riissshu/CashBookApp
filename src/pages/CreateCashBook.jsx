@@ -173,286 +173,286 @@ function CreateCashBook() {
   }
 
   return (
-    <div className="container-fluid py-4">
-      <h2 className="mb-4">Create Cash Book</h2>
+  <div className="container-fluid py-4">
+    <h2 className="mb-4">Create Cash Book</h2>
 
-      {/* Header */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <div className="row g-3">
-            <div className="col-md-3">
-              <label className="form-label">Date</label>
-              <input
-                type="date"
-                className="form-control"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </div>
+    {/* Header */}
+    <div className="card mb-4">
+      <div className="card-body">
+        <div className="row g-3">
+          <div className="col-md-3">
+            <label className="form-label">Date</label>
+            <input
+              type="date"
+              className="form-control"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
 
-            <div className="col-md-3">
-              <label className="form-label">Opening Balance</label>
-              <input
-                type="text"
-                className="form-control"
-                value={`₹${openingBalance.toFixed(2)}`}
-                readOnly
-              />
-            </div>
+          <div className="col-md-3">
+            <label className="form-label">Opening Balance</label>
+            <input
+              type="text"
+              className="form-control"
+              value={`₹${openingBalance.toFixed(2)}`}
+              readOnly
+            />
+          </div>
 
-            <div className="col-md-6">
-              <label className="form-label">
-                Description / Narration
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                value={narration}
-                onChange={(e) => setNarration(e.target.value)}
-                placeholder="Enter description / narration"
-              />
-            </div>
+          <div className="col-md-6">
+            <label className="form-label">
+              Description / Narration
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              value={narration}
+              onChange={(e) => setNarration(e.target.value)}
+              placeholder="Enter description / narration"
+            />
           </div>
         </div>
       </div>
+    </div>
 
+    {/* Receipt & Payment */}
+    <div className="row g-4">
       {/* Receipt */}
-      <div className="card mb-4">
-        <div className="card-header">
-          <strong>Receipt</strong>
-        </div>
+      <div className="col-lg-6">
+        <div className="card h-100">
+          <div className="card-header">
+            <strong>Receipt</strong>
+          </div>
 
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table table-bordered align-middle">
-              <thead>
-                <tr>
-                  <th>Party / Particulars</th>
-                  <th style={{ width: "180px" }}>Amount</th>
-                  <th>Description</th>
-                  <th style={{ width: "80px" }}></th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {receipts.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={item.party_name}
-                        onChange={(e) =>
-                          updateReceipt(
-                            item.id,
-                            "party_name",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="number"
-                        className="form-control text-end"
-                        value={item.amount}
-                        onChange={(e) =>
-                          updateReceipt(
-                            item.id,
-                            "amount",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={item.description}
-                        onChange={(e) =>
-                          updateReceipt(
-                            item.id,
-                            "description",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => removeReceipt(item.id)}
-                      >
-                        ×
-                      </button>
-                    </td>
+          <div className="card-body">
+            <div className="table-responsive">
+              <table className="table table-bordered align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Party / Particulars</th>
+                    <th style={{ width: "150px" }}>Amount</th>
+                    <th>Description</th>
+                    <th style={{ width: "55px" }}></th>
                   </tr>
-                ))}
-              </tbody>
+                </thead>
 
-              <tfoot>
-                <tr>
-                  <th className="text-end">Total Receipt</th>
-                  <th className="text-end">
-                    ₹{totalReceipt.toFixed(2)}
-                  </th>
-                  <th colSpan="2">
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={addReceipt}
-                    >
-                      + Add Receipt
-                    </button>
-                  </th>
-                </tr>
-              </tfoot>
-            </table>
+                <tbody>
+                  {receipts.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={item.party_name}
+                          onChange={(e) =>
+                            updateReceipt(
+                              item.id,
+                              "party_name",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+
+                      <td>
+                        <input
+                          type="number"
+                          className="form-control text-end"
+                          value={item.amount}
+                          onChange={(e) =>
+                            updateReceipt(
+                              item.id,
+                              "amount",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+
+                      <td>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={item.description}
+                          onChange={(e) =>
+                            updateReceipt(
+                              item.id,
+                              "description",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+
+                      <td className="text-center">
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => removeReceipt(item.id)}
+                        >
+                          ×
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+
+                <tfoot>
+                  <tr>
+                    <th className="text-end">Total Receipt</th>
+
+                    <th className="text-end">
+                      ₹{totalReceipt.toFixed(2)}
+                    </th>
+
+                    <th colSpan="2">
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={addReceipt}
+                      >
+                        + Add Receipt
+                      </button>
+                    </th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Payment */}
-      <div className="card mb-4">
-        <div className="card-header">
-          <strong>Payment</strong>
-        </div>
+      <div className="col-lg-6">
+        <div className="card h-100">
+          <div className="card-header">
+            <strong>Payment</strong>
+          </div>
 
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table table-bordered align-middle">
-              <thead>
-                <tr>
-                  <th>Party / Particulars</th>
-                  <th style={{ width: "180px" }}>Amount</th>
-                  <th>Description</th>
-                  <th style={{ width: "80px" }}></th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {payments.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={item.party_name}
-                        onChange={(e) =>
-                          updatePayment(
-                            item.id,
-                            "party_name",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="number"
-                        className="form-control text-end"
-                        value={item.amount}
-                        onChange={(e) =>
-                          updatePayment(
-                            item.id,
-                            "amount",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={item.description}
-                        onChange={(e) =>
-                          updatePayment(
-                            item.id,
-                            "description",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => removePayment(item.id)}
-                      >
-                        ×
-                      </button>
-                    </td>
+          <div className="card-body">
+            <div className="table-responsive">
+              <table className="table table-bordered align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Party / Particulars</th>
+                    <th style={{ width: "150px" }}>Amount</th>
+                    <th>Description</th>
+                    <th style={{ width: "55px" }}></th>
                   </tr>
-                ))}
-              </tbody>
+                </thead>
 
-              <tfoot>
-                <tr>
-                  <th className="text-end">Total Payment</th>
-                  <th className="text-end">
-                    ₹{totalPayment.toFixed(2)}
-                  </th>
-                  <th colSpan="2">
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={addPayment}
-                    >
-                      + Add Payment
-                    </button>
-                  </th>
-                </tr>
-              </tfoot>
-            </table>
+                <tbody>
+                  {payments.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={item.party_name}
+                          onChange={(e) =>
+                            updatePayment(
+                              item.id,
+                              "party_name",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+
+                      <td>
+                        <input
+                          type="number"
+                          className="form-control text-end"
+                          value={item.amount}
+                          onChange={(e) =>
+                            updatePayment(
+                              item.id,
+                              "amount",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+
+                      <td>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={item.description}
+                          onChange={(e) =>
+                            updatePayment(
+                              item.id,
+                              "description",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+
+                      <td className="text-center">
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => removePayment(item.id)}
+                        >
+                          ×
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+
+                <tfoot>
+                  <tr>
+                    <th className="text-end">Total Payment</th>
+
+                    <th className="text-end">
+                      ₹{totalPayment.toFixed(2)}
+                    </th>
+
+                    <th colSpan="2">
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={addPayment}
+                      >
+                        + Add Payment
+                      </button>
+                    </th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Summary */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <div className="row">
-            <div className="col-md-4">
-              <strong>Opening Balance:</strong>
-              <div>₹{openingBalance.toFixed(2)}</div>
-            </div>
-
-            <div className="col-md-4">
-              <strong>Total Receipt:</strong>
-              <div>₹{totalReceipt.toFixed(2)}</div>
-            </div>
-
-            <div className="col-md-4">
-              <strong>Total Payment:</strong>
-              <div>₹{totalPayment.toFixed(2)}</div>
-            </div>
-          </div>
-
-          <hr />
-
-          <div className="text-end">
-            <strong>Closing Balance</strong>
-            <h4>₹{closingBalance.toFixed(2)}</h4>
-          </div>
-        </div>
-      </div>
-
-      <div className="text-end">
-        <button
-          className="btn btn-primary px-4"
-          onClick={handleSave}
-        >
-          Save Cash Book
-        </button>
       </div>
     </div>
-  );
+
+    {/* Closing Balance */}
+    <div className="card mt-4">
+      <div className="card-body">
+        <div className="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Closing Balance</strong>
+          </div>
+
+          <div>
+            <h4 className="mb-0">
+              ₹{closingBalance.toFixed(2)}
+            </h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Save */}
+    <div className="text-end mt-4">
+      <button
+        className="btn btn-primary px-4"
+        onClick={handleSave}
+      >
+        Save Cash Book
+      </button>
+    </div>
+  </div>
+);
 }
 
 export default CreateCashBook;
