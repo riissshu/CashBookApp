@@ -1,23 +1,26 @@
-import './App.css'
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import CreateCashBook from "./pages/CreateCashBook";
 import { initDatabase } from "./database";
 
 function App() {
+  const [databaseReady, setDatabaseReady] = useState(false);
+
   useEffect(() => {
     initDatabase()
       .then(() => {
         console.log("SQLite database initialized");
+        setDatabaseReady(true);
       })
       .catch((error) => {
         console.error("SQLite initialization failed:", error);
       });
   }, []);
 
-  return (
-    <div>
-      <h1>CashBook</h1>
-    </div>
-  );
+  if (!databaseReady) {
+    return <div>Loading...</div>;
+  }
+
+  return <CreateCashBook />;
 }
 
 export default App;
