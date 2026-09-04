@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import CreateCashBook from "./pages/CreateCashBook";
+import Dashboard from "./pages/Dashboard";
+import Settings from "./pages/Settings";
+import CashBookRegister from "./pages/CashBookRegister";
+import ViewCashBook from "./pages/ViewCashBook";
+
 import { initDatabase } from "./database";
 
 function App() {
@@ -20,7 +27,20 @@ function App() {
     return <div>Loading...</div>;
   }
 
-  return <CreateCashBook />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/create-cash-book" element={<CreateCashBook />} />
+        <Route path="/settings" element = {<Settings />} />
+        <Route path="/cash-book-register" element = {<CashBookRegister/>}/>
+        <Route path="/view-cash-book" element = {<ViewCashBook/>}/>
+
+        {/* Temporary fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
