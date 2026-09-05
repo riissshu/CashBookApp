@@ -163,6 +163,16 @@ function Dashboard() {
 
       </div>
 
+      {/* Backup & Restore  */}
+        <div className="col-auto">
+            <button
+  
+  className="btn btn-primary w-100 py-3"
+  onClick={() => navigate("/backup-restore")}
+>
+  Backup & Restore
+</button></div>
+
     </div>
   );
 }

@@ -129,76 +129,103 @@ function ViewCashBook() {
       </div>
 
       {/* Transactions */}
-      <div className="card shadow-sm">
+<div className="row">
 
-        <div className="card-header bg-white">
-          <h5 className="mb-0">
-            Transactions
-          </h5>
-        </div>
+  {/* Receipt Side */}
+  <div className="col-md-6 mb-4">
+    <div className="card shadow-sm h-100">
 
-        <div className="card-body p-0">
+      <div className="card-header">
+        <h5 className="mb-0">Receipt</h5>
+      </div>
 
-          <div className="table-responsive">
+      <div className="card-body p-0">
 
-            <table className="table table-bordered table-hover mb-0">
+        <table className="table table-bordered mb-0">
+          <thead>
+            <tr>
+              <th style={{ width: "60px" }}>#</th>
+              <th>Particulars</th>
+              <th className="text-end" style={{ width: "150px" }}>
+                Amount
+              </th>
+            </tr>
+          </thead>
 
-              <thead className="table-light">
-                <tr>
-                  <th style={{ width: "60px" }}>#</th>
-                  <th style={{ width: "120px" }}>Type</th>
-                  <th>Party / Particulars</th>
-                  <th>Description</th>
-                  <th
-                    className="text-end"
-                    style={{ width: "160px" }}
-                  >
-                    Amount
-                  </th>
-                </tr>
-              </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Cash Sales</td>
+              <td className="text-end">₹ 0.00</td>
+            </tr>
 
-              <tbody>
+            <tr>
+              <td>2</td>
+              <td>Party Receipt</td>
+              <td className="text-end">₹ 0.00</td>
+            </tr>
+          </tbody>
 
-                {/* Sample Receipt */}
-                <tr>
-                  <td>1</td>
-                  <td>
-                    <span className="badge bg-success">
-                      Receipt
-                    </span>
-                  </td>
-                  <td>Cash Received</td>
-                  <td>Sample receipt entry</td>
-                  <td className="text-end">
-                    ₹ 0.00
-                  </td>
-                </tr>
-
-                {/* Sample Payment */}
-                <tr>
-                  <td>2</td>
-                  <td>
-                    <span className="badge bg-danger">
-                      Payment
-                    </span>
-                  </td>
-                  <td>Cash Payment</td>
-                  <td>Sample payment entry</td>
-                  <td className="text-end">
-                    ₹ 0.00
-                  </td>
-                </tr>
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-        </div>
+          <tfoot className="table-light">
+            <tr>
+              <th colSpan="2">Total Receipt</th>
+              <th className="text-end">₹ 0.00</th>
+            </tr>
+          </tfoot>
+        </table>
 
       </div>
+    </div>
+  </div>
+
+  {/* Payment Side */}
+  <div className="col-md-6 mb-4">
+    <div className="card shadow-sm h-100">
+
+      <div className="card-header">
+        <h5 className="mb-0">Payment</h5>
+      </div>
+
+      <div className="card-body p-0">
+
+        <table className="table table-bordered mb-0">
+          <thead>
+            <tr>
+              <th style={{ width: "60px" }}>#</th>
+              <th>Particulars</th>
+              <th className="text-end" style={{ width: "150px" }}>
+                Amount
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Purchase Payment</td>
+              <td className="text-end">₹ 0.00</td>
+            </tr>
+
+            <tr>
+              <td>2</td>
+              <td>Expense Payment</td>
+              <td className="text-end">₹ 0.00</td>
+            </tr>
+          </tbody>
+
+          <tfoot className="table-light">
+            <tr>
+              <th colSpan="2">Total Payment</th>
+              <th className="text-end">₹ 0.00</th>
+            </tr>
+          </tfoot>
+        </table>
+
+      </div>
+    </div>
+  </div>
+
+</div>
 
     </div>
   );
