@@ -13,9 +13,9 @@ export async function initDatabase() {
 
   db = await Database.load("sqlite:cashbook.db");
 
-  // Settings table
+  // Company table
   await db.execute(`
-    CREATE TABLE IF NOT EXISTS settings (
+    CREATE TABLE IF NOT EXISTS company (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       company_name TEXT,
       opening_balance REAL NOT NULL DEFAULT 0,
@@ -72,11 +72,11 @@ export async function getOpeningBalance(date) {
     [date]
   );
 
-  // If no previous day exists, use the opening balance from settings
+  // If no previous day exists, use the opening balance from company
   if (previous.length === 0) {
     const settings = await db.select(
       `SELECT opening_balance
-       FROM settings
+       FROM company
        ORDER BY id
        LIMIT 1`
     );
