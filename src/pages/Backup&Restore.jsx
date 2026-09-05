@@ -30,10 +30,10 @@ function BackupRestore() {
 
         <button
           type="button"
-          className="btn btn-outline-secondary"
-          onClick={() => navigate("/dashboard")}
+          className="btn btn-outline-secondary mx-4"
+          onClick={() => navigate("/settings")}
         >
-          ← Dashboard
+          ← Back
         </button>
       </div>
 

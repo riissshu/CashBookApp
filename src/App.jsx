@@ -10,7 +10,7 @@ import LandingPage from "./pages/LandingPage";
 import CreateCompany from "./pages/CreateCompany";
 import BackupRestore from "./pages/Backup&Restore";
 
-import { initDatabase } from "./database";
+import { initDatabase } from "./services/database";
 
 function App() {
   const [databaseReady, setDatabaseReady] = useState(false);

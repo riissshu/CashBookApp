@@ -32,14 +32,14 @@ function Settings() {
         <button
           type="button"
           className="btn btn-outline-secondary"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/dashboard")}
         >
           ← Dashboard
         </button>
       </div>
 
       {/* Settings Form */}
-      <div className="card shadow-sm">
+      <div className="card shadow-sm mb-4">
 
         <div className="card-header bg-white">
           <h5 className="mb-0">Basic Settings</h5>
@@ -105,6 +105,31 @@ function Settings() {
           </form>
 
         </div>
+      </div>
+
+      <div className="row g-3 d-flex gap-2 justify-content-center mt-4 pt-4">
+
+       {/* Backup & Restore  */}
+      <div className="col-auto">
+        <button
+          className="btn btn-lg btn-outline-primary"
+          onClick={() => navigate("/backup-restore")}
+        >
+          Backup & Restore
+        </button>
+      </div>
+
+      {/* Close Company */}
+      <div className="col-auto">
+          <button
+          className="btn btn-lg btn-outline-danger"
+          onClick={() => navigate("/")}
+        >
+           Close Company
+        </button>
+      
+      </div>
+
       </div>
 
     </div>

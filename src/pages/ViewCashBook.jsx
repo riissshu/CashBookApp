@@ -27,7 +27,7 @@ function ViewCashBook() {
           <button
             type="button"
             className="btn btn-outline-secondary"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
           >
             Dashboard
           </button>

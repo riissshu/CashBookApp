@@ -136,16 +136,6 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Backup & Restore  */}
-
-      <div className="pt-4 d-flex justify-content-center">
-        <button
-          className="btn btn-lg btn-primary"
-          onClick={() => navigate("/backup-restore")}
-        >
-          Backup & Restore
-        </button>
-      </div>
     </div>
   );
 }

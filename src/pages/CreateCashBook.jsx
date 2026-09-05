@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createCashBook, getCashBookByDate, saveCashBook } from "../database";
+import { createCashBook, getCashBookByDate, saveCashBook } from "../services/database";
 
 function CreateCashBook() {
   const navigate = useNavigate();
@@ -171,9 +171,9 @@ function CreateCashBook() {
         <button
           type="button"
           className="btn btn-outline-secondary"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/dashboard")}
         >
-          ← Back
+          ← Dashboard
         </button>
       </div>
 
