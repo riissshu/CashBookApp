@@ -7,30 +7,22 @@ function Dashboard() {
 
   return (
     <div className="container-fluid p-4">
-
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="mb-1">Dashboard</h2>
-          <div className="text-muted">
-            Cash Book Management
-          </div>
+          <div className="text-muted">Cash Book Management</div>
         </div>
 
-        <div className="text-muted">
-          {today}
-        </div>
+        <div className="text-muted">{today}</div>
       </div>
 
       {/* Summary Cards */}
       <div className="row g-3 mb-4">
-
         <div className="col-md-3">
           <div className="card shadow-sm h-100">
             <div className="card-body">
-              <div className="text-muted mb-2">
-                Opening Balance
-              </div>
+              <div className="text-muted mb-2">Opening Balance</div>
               <h3 className="mb-0">₹ 0.00</h3>
             </div>
           </div>
@@ -39,9 +31,7 @@ function Dashboard() {
         <div className="col-md-3">
           <div className="card shadow-sm h-100">
             <div className="card-body">
-              <div className="text-muted mb-2">
-                Today's Receipt
-              </div>
+              <div className="text-muted mb-2">Today's Receipt</div>
               <h3 className="mb-0">₹ 0.00</h3>
             </div>
           </div>
@@ -50,9 +40,7 @@ function Dashboard() {
         <div className="col-md-3">
           <div className="card shadow-sm h-100">
             <div className="card-body">
-              <div className="text-muted mb-2">
-                Today's Payment
-              </div>
+              <div className="text-muted mb-2">Today's Payment</div>
               <h3 className="mb-0">₹ 0.00</h3>
             </div>
           </div>
@@ -61,14 +49,11 @@ function Dashboard() {
         <div className="col-md-3">
           <div className="card shadow-sm h-100">
             <div className="card-body">
-              <div className="text-muted mb-2">
-                Closing Balance
-              </div>
+              <div className="text-muted mb-2">Closing Balance</div>
               <h3 className="mb-0">₹ 0.00</h3>
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Quick Actions */}
@@ -78,9 +63,7 @@ function Dashboard() {
         </div>
 
         <div className="card-body">
-
           <div className="row g-3">
-
             <div className="col-md-3">
               <button
                 className="btn btn-primary w-100 py-3"
@@ -116,25 +99,19 @@ function Dashboard() {
                 Settings
               </button>
             </div>
-
           </div>
-
         </div>
       </div>
 
       {/* Today's Cash Book */}
-      <div className="card shadow-sm">
-
+      <div className="card shadow-sm mb-4">
         <div className="card-header bg-white">
           <h5 className="mb-0">Today's Cash Book</h5>
         </div>
 
         <div className="card-body">
-
           <div className="table-responsive">
-
             <table className="table table-bordered mb-0">
-
               <thead>
                 <tr>
                   <th>Date</th>
@@ -154,25 +131,21 @@ function Dashboard() {
                   <td className="text-end">₹ 0.00</td>
                 </tr>
               </tbody>
-
             </table>
-
           </div>
-
         </div>
-
       </div>
 
       {/* Backup & Restore  */}
-        <div className="col-auto">
-            <button
-  
-  className="btn btn-primary w-100 py-3"
-  onClick={() => navigate("/backup-restore")}
->
-  Backup & Restore
-</button></div>
 
+      <div className="pt-4 d-flex justify-content-center">
+        <button
+          className="btn btn-lg btn-primary"
+          onClick={() => navigate("/backup-restore")}
+        >
+          Backup & Restore
+        </button>
+      </div>
     </div>
   );
 }
