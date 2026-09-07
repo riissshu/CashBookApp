@@ -11,7 +11,7 @@ function ViewCashBook() {
         <div>
           <h2 className="mb-1">View Cash Book</h2>
           <div className="text-muted">
-            Daily Cash Book Details
+            Cash Book Details
           </div>
         </div>
 
@@ -52,13 +52,9 @@ function ViewCashBook() {
               />
             </div>
 
-            <div className="col-md-2">
-              <button
-                type="button"
-                className="btn btn-primary w-100"
-              >
-                View
-              </button>
+            <div className="col d-flex gap-2 justify-content-end">
+              <button className="btn btn-outline-secondary">Edit</button>
+              <button className="btn btn-outline-danger">Delete</button>
             </div>
 
           </div>

@@ -111,24 +111,7 @@ function LandingPage() {
 
           </div>
 
-          {/* Settings */}
-          <div className="text-center">
 
-            <button
-              type="button"
-              className="btn btn-link text-decoration-none"
-              onClick={() => navigate("/settings")}
-            >
-              Settings
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* Footer */}
-        <div className="card-footer bg-white text-center text-muted py-3">
-          Cash Book
         </div>
 
       </div>
