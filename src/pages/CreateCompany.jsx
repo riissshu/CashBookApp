@@ -1,10 +1,28 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { createCompany } from "../services/api";
 
 
 function CreateCompany() {
   const navigate = useNavigate();
 
+  const [companyName, setCompanyName] = useState("");
+const [openingBalance, setOpeningBalance] = useState("");
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    await createCompany(
+      companyName,
+      Number(openingBalance || 0)
+    );
+
+    navigate("/");
+  } catch (err) {
+    console.error("Failed to create company:", err);
+  }
+};
  
 
   return (
