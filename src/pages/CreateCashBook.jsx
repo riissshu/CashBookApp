@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  getCashBookByDate,
+  createCashBook,
+  saveCashBook,
+} from "../services/api";
 
 function CreateCashBook() {
   const navigate = useNavigate();
@@ -26,7 +31,7 @@ function CreateCashBook() {
 
         setReceipts(
           existing.transactions
-            .filter((item) => item.type === "receipt")
+            .filter((item) => item.transaction_type === "receipt")
             .map((item) => ({
               id: item.id,
               party_name: item.party_name,
@@ -37,7 +42,7 @@ function CreateCashBook() {
 
         setPayments(
           existing.transactions
-            .filter((item) => item.type === "payment")
+            .filter((item) => item.transaction_type === "payment")
             .map((item) => ({
               id: item.id,
               party_name: item.party_name,
@@ -131,7 +136,7 @@ function CreateCashBook() {
         ...receipts
           .filter((item) => item.party_name.trim() && Number(item.amount) > 0)
           .map((item) => ({
-            type: "receipt",
+            transaction_type: "receipt",
             party_name: item.party_name.trim(),
             amount: Number(item.amount),
             description: item.description.trim(),
@@ -140,7 +145,7 @@ function CreateCashBook() {
         ...payments
           .filter((item) => item.party_name.trim() && Number(item.amount) > 0)
           .map((item) => ({
-            type: "payment",
+            transaction_type: "payment",
             party_name: item.party_name.trim(),
             amount: Number(item.amount),
             description: item.description.trim(),

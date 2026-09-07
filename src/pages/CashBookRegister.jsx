@@ -1,7 +1,32 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { listCashBooks } from "../services/api";
 
 function CashBookRegister() {
   const navigate = useNavigate();
+
+  const [cashBooks, setCashBooks] = useState([]);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState("");
+
+
+useEffect(() => {
+  const loadCashBooks = async () => {
+    try {
+      setError("");
+
+      const data = await listCashBooks();
+      setCashBooks(data);
+    } catch (err) {
+      console.error("Failed to load cash books:", err);
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadCashBooks();
+}, []);
 
   return (
     <div className="container-fluid p-4">
@@ -67,36 +92,62 @@ function CashBookRegister() {
               </thead>
 
               <tbody>
+  {error && (
+    <tr>
+      <td colSpan="7" className="text-center py-4 text-danger">
+        {error}
+      </td>
+    </tr>
+  )}
 
-                {/* Sample row - database will be connected later */}
-                <tr>
-                  <td>1</td>
-                  <td>04-09-2026</td>
-                  <td className="text-end">₹ 0.00</td>
-                  <td className="text-end">₹ 0.00</td>
-                  <td className="text-end">₹ 0.00</td>
-                  <td className="text-end">₹ 0.00</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary"
-                      onClick={() => navigate("/view-cash-book")}
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
+  {loading ? (
+    <tr>
+      <td colSpan="7" className="text-center py-4 text-muted">
+        Loading Cash Books...
+      </td>
+    </tr>
+  ) : cashBooks.length === 0 ? (
+    <tr>
+      <td colSpan="7" className="text-center py-4 text-muted">
+        No Cash Books found
+      </td>
+    </tr>
+  ) : (
+    cashBooks.map((cashBook, index) => (
+      <tr key={cashBook.id}>
+        <td>{index + 1}</td>
 
-                {/* Empty state example */}
-                {/* 
-                <tr>
-                  <td colSpan="7" className="text-center py-4 text-muted">
-                    No Cash Books found
-                  </td>
-                </tr>
-                */}
+        <td>{cashBook.date}</td>
 
-              </tbody>
+        <td className="text-end">
+          ₹ {Number(cashBook.opening_balance || 0).toFixed(2)}
+        </td>
+
+        <td className="text-end">
+          ₹ {Number(cashBook.total_receipt || 0).toFixed(2)}
+        </td>
+
+        <td className="text-end">
+          ₹ {Number(cashBook.total_payment || 0).toFixed(2)}
+        </td>
+
+        <td className="text-end">
+          ₹ {Number(cashBook.closing_balance || 0).toFixed(2)}
+        </td>
+
+        <td>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-primary"
+            onClick={() => navigate(`/view-cash-book?date=${cashBook.date}`)}
+          >
+            View
+          </button>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
 
             </table>
 

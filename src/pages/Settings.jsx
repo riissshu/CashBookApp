@@ -1,5 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  getCompanySettings,
+  updateCompanySettings,
+  clearActiveCompany,
+} from "../services/api";
 
 function Settings() {
   const navigate = useNavigate();
@@ -7,15 +12,44 @@ function Settings() {
   const [companyName, setCompanyName] = useState("");
   const [openingBalance, setOpeningBalance] = useState("");
 
-  const handleSave = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+  const loadSettings = async () => {
+    try {
+      const data = await getCompanySettings();
 
-    // Database connection will be added later.
-    console.log("Settings:", {
-      companyName,
-      openingBalance,
-    });
+      setCompanyName(data.company_name || "");
+      setOpeningBalance(data.opening_balance ?? "");
+    } catch (err) {
+      console.error("Failed to load company settings:", err);
+    }
   };
+
+  loadSettings();
+}, []);
+
+const handleCloseCompany = async () => {
+  try {
+    await clearActiveCompany();
+    navigate("/");
+  } catch (err) {
+    console.error("Failed to close company:", err);
+  }
+};
+
+  const handleSave = async (e) => {
+  e.preventDefault();
+
+  try {
+    await updateCompanySettings(
+      companyName,
+      Number(openingBalance || 0)
+    );
+
+    console.log("Settings saved successfully");
+  } catch (err) {
+    console.error("Failed to save settings:", err);
+  }
+};
 
   return (
     <div className="container-fluid p-4">
@@ -127,7 +161,7 @@ function Settings() {
       <div className="col-auto">
           <button
           className="btn btn-lg btn-outline-danger"
-          onClick={() => navigate("/")}
+          onClick={handleCloseCompany}
         >
            Close Company
         </button>

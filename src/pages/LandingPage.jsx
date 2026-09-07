@@ -5,6 +5,7 @@ import {
   getDatabaseDirectory,
   setDatabaseDirectory,
   listCompanies,
+    setActiveCompany,
 } from "../services/api";
 
 function LandingPage() {
@@ -59,13 +60,15 @@ function LandingPage() {
     }
   };
 
-  const handleOpenCompany = (company) => {
-    console.log("Selected company:", company);
-
-    // Later we will store the selected database
-    // and load its Cash Book.
+  const handleOpenCompany = async (company) => {
+  try {
+    await setActiveCompany(company.path);
     navigate("/dashboard");
-  };
+  } catch (err) {
+    console.error("Failed to open company:", err);
+    setError(String(err));
+  }
+};
 
   return (
     <div className="min-vh-100 bg-light d-flex align-items-center justify-content-center p-4">

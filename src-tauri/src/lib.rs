@@ -57,6 +57,159 @@ fn create_company(
     )
 }
 
+
+#[tauri::command]
+fn set_active_company(
+    app: tauri::AppHandle,
+    company_path: String,
+) -> Result<(), String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::set_active_company(app_data_dir, company_path)
+}
+
+
+#[tauri::command]
+fn clear_active_company(
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::clear_active_company(app_data_dir)
+}
+
+
+#[tauri::command]
+fn get_active_company(
+    app: tauri::AppHandle,
+) -> Result<String, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::get_active_company(app_data_dir)
+}
+
+#[tauri::command]
+fn get_opening_balance(
+    app: tauri::AppHandle,
+    date: String,
+) -> Result<f64, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::get_opening_balance(app_data_dir, date)
+}
+
+#[tauri::command]
+fn get_cash_book_by_date(
+    app: tauri::AppHandle,
+    date: String,
+) -> Result<Option<database::CashBook>, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::get_cash_book_by_date(app_data_dir, date)
+}
+
+#[tauri::command]
+fn create_cash_book(
+    app: tauri::AppHandle,
+    date: String,
+    narration: String,
+) -> Result<Option<database::CashBook>, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::create_cash_book(
+        app_data_dir,
+        date,
+        narration,
+    )
+}
+
+#[tauri::command]
+fn save_cash_book(
+    app: tauri::AppHandle,
+    cashbook_id: i64,
+    date: String,
+    narration: String,
+    transactions: Vec<serde_json::Value>,
+) -> Result<Option<database::CashBook>, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::save_cash_book(
+        app_data_dir,
+        cashbook_id,
+        date,
+        narration,
+        transactions,
+    )
+}
+
+#[tauri::command]
+fn list_cash_books(
+    app: tauri::AppHandle,
+) -> Result<Vec<database::CashBook>, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::list_cash_books(app_data_dir)
+}
+
+
+#[tauri::command]
+fn get_company_settings(
+    app: tauri::AppHandle,
+) -> Result<serde_json::Value, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::get_company_settings(app_data_dir)
+}
+
+#[tauri::command]
+fn update_company_settings(
+    app: tauri::AppHandle,
+    company_name: String,
+    opening_balance: f64,
+) -> Result<(), String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    database::update_company_settings(
+        app_data_dir,
+        company_name,
+        opening_balance,
+    )
+}
+
+
+
+
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -69,7 +222,17 @@ pub fn run() {
     get_database_directory,
     set_database_directory,
     list_companies,
-      create_company
+    create_company,
+    set_active_company,
+    get_active_company,
+    get_opening_balance,
+    get_cash_book_by_date,
+    create_cash_book,
+    save_cash_book,
+    list_cash_books,
+    get_company_settings,
+    update_company_settings,
+    clear_active_company,
 ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

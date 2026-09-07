@@ -1,9 +1,38 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getCashBookByDate } from "../services/api";
 
 function Dashboard() {
   const navigate = useNavigate();
 
   const today = new Date().toISOString().split("T")[0];
+
+  const [cashBook, setCashBook] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTodayCashBook = async () => {
+      try {
+        const data = await getCashBookByDate(today);
+        setCashBook(data);
+      } catch (err) {
+        console.error("Failed to load today's Cash Book:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTodayCashBook();
+  }, [today]);
+
+  if (loading) {
+  return <div className="p-4">Loading Dashboard...</div>;
+}
+
+  const openingBalance = cashBook?.opening_balance || 0;
+  const totalReceipt = cashBook?.total_receipt || 0;
+  const totalPayment = cashBook?.total_payment || 0;
+  const closingBalance = cashBook?.closing_balance || 0;
 
   return (
     <div className="container-fluid p-4">
@@ -23,7 +52,9 @@ function Dashboard() {
           <div className="card shadow-sm h-100">
             <div className="card-body">
               <div className="text-muted mb-2">Opening Balance</div>
-              <h3 className="mb-0">₹ 0.00</h3>
+              <h3 className="mb-0">
+                ₹ {openingBalance.toFixed(2)}
+              </h3>
             </div>
           </div>
         </div>
@@ -32,7 +63,9 @@ function Dashboard() {
           <div className="card shadow-sm h-100">
             <div className="card-body">
               <div className="text-muted mb-2">Today's Receipt</div>
-              <h3 className="mb-0">₹ 0.00</h3>
+              <h3 className="mb-0">
+                ₹ {totalReceipt.toFixed(2)}
+              </h3>
             </div>
           </div>
         </div>
@@ -41,7 +74,9 @@ function Dashboard() {
           <div className="card shadow-sm h-100">
             <div className="card-body">
               <div className="text-muted mb-2">Today's Payment</div>
-              <h3 className="mb-0">₹ 0.00</h3>
+              <h3 className="mb-0">
+                ₹ {totalPayment.toFixed(2)}
+              </h3>
             </div>
           </div>
         </div>
@@ -50,7 +85,9 @@ function Dashboard() {
           <div className="card shadow-sm h-100">
             <div className="card-body">
               <div className="text-muted mb-2">Closing Balance</div>
-              <h3 className="mb-0">₹ 0.00</h3>
+              <h3 className="mb-0">
+                ₹ {closingBalance.toFixed(2)}
+              </h3>
             </div>
           </div>
         </div>
@@ -125,10 +162,22 @@ function Dashboard() {
               <tbody>
                 <tr>
                   <td>{today}</td>
-                  <td className="text-end">₹ 0.00</td>
-                  <td className="text-end">₹ 0.00</td>
-                  <td className="text-end">₹ 0.00</td>
-                  <td className="text-end">₹ 0.00</td>
+
+                  <td className="text-end">
+                    ₹ {openingBalance.toFixed(2)}
+                  </td>
+
+                  <td className="text-end">
+                    ₹ {totalReceipt.toFixed(2)}
+                  </td>
+
+                  <td className="text-end">
+                    ₹ {totalPayment.toFixed(2)}
+                  </td>
+
+                  <td className="text-end">
+                    ₹ {closingBalance.toFixed(2)}
+                  </td>
                 </tr>
               </tbody>
             </table>
