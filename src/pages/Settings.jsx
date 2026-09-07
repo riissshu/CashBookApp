@@ -88,9 +88,13 @@ function Settings() {
             <div className="d-flex gap-2">
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-success"
               >
                 Save Settings
+              </button>
+
+              <button className="btn btn-primary">
+                Edit Settings
               </button>
 
               <button

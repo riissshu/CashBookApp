@@ -10,21 +10,10 @@ import LandingPage from "./pages/LandingPage";
 import CreateCompany from "./pages/CreateCompany";
 import BackupRestore from "./pages/Backup&Restore";
 
-import { initDatabase } from "./services/database";
+
 
 function App() {
-  const [databaseReady, setDatabaseReady] = useState(false);
 
-  useEffect(() => {
-    initDatabase()
-      .then(() => {
-        console.log("SQLite database initialized");
-        setDatabaseReady(true);
-      })
-      .catch((error) => {
-        console.error("SQLite initialization failed:", error);
-      });
-  }, []);
 
   return (
     <BrowserRouter>

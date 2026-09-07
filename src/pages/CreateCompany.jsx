@@ -1,21 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
+
 function CreateCompany() {
   const navigate = useNavigate();
 
-  const [companyName, setCompanyName] = useState("");
-  const [openingBalance, setOpeningBalance] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Database connection will be added later.
-    console.log({
-      companyName,
-      openingBalance,
-    });
-  };
+ 
 
   return (
     <div className="min-vh-100 bg-light d-flex align-items-center justify-content-center p-4">

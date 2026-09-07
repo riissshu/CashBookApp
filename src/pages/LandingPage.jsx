@@ -1,20 +1,10 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 
 function LandingPage() {
   const navigate = useNavigate();
 
-  // Sample companies for UI testing.
-  // Database connection will be added later.
-  const companies = [
-    {
-      id: 1,
-      name: "ABC Traders",
-    },
-    {
-      id: 2,
-      name: "XYZ Enterprises",
-    },
-  ];
 
   const handleOpenCompany = (company) => {
     console.log("Selected company:", company);
@@ -63,7 +53,7 @@ function LandingPage() {
 
                   <div>
                     <div className="fw-semibold">
-                      {company.name}
+                      {company.company_name}
                     </div>
 
                     <small className="text-muted">
@@ -89,12 +79,12 @@ function LandingPage() {
                 No company has been created yet.
               </div>
 
-              <button
-                type="button"
-                className="btn btn-primary"
+              <div
+                
+                className="badge text-bg-light"
               >
-                + Create New Company
-              </button>
+                 Create Company
+              </div>
             </div>
           )}
 
