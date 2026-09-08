@@ -134,7 +134,7 @@ const handleCloseCompany = async () => {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/settings")}
               >
                 Cancel
               </button>

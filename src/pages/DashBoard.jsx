@@ -119,14 +119,7 @@ function Dashboard() {
               </button>
             </div>
 
-            <div className="col-md-3">
-              <button
-                className="btn btn-outline-primary w-100 py-3"
-                onClick={() => navigate("/view-cash-book")}
-              >
-                View Cash Book
-              </button>
-            </div>
+            
 
             <div className="col-md-3">
               <button
