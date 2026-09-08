@@ -90,9 +90,15 @@ export async function createBackup(backupPath) {
   });
 }
 
-export async function restoreBackup(backupPath) {
+export async function restoreBackup(
+  backupPath,
+  action,
+  existingCompanyPath = null
+) {
   return await invoke("restore_backup", {
     backupPath,
+    action,
+    existingCompanyPath,
   });
 }
 

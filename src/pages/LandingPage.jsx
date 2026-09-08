@@ -7,6 +7,7 @@ import {
   listCompanies,
     setActiveCompany,
     inspectBackup,
+    restoreBackup,
 } from "../services/api";
 
 function LandingPage() {
@@ -121,12 +122,71 @@ function LandingPage() {
 };
 
 
-  const handleReplaceRestore = async () => {
-  console.log("Replace existing company:", restoreInfo);
+const handleReplaceRestore = async () => {
+  try {
+    if (!restoreInfo?.existingCompany) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to replace this company?\n\n` +
+      `Company: ${restoreInfo.existingCompany.company_name}\n\n` +
+      `All current data in this company database will be replaced ` +
+      `by the backup.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await restoreBackup(
+      restoreInfo.backupPath,
+      "replace",
+      restoreInfo.existingCompany.path
+    );
+
+    setRestoreInfo(null);
+
+    await loadCompanies();
+
+    alert("Company restored successfully.");
+  } catch (err) {
+    console.error("Failed to replace company:", err);
+    setError(String(err));
+  }
 };
 
 const handleCreateNewRestore = async () => {
-  console.log("Restore as new company:", restoreInfo);
+  try {
+    if (!restoreInfo) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Restore this backup as a new company?\n\n` +
+      `Company: ${restoreInfo.metadata.company_name}\n\n` +
+      `A new Company UUID and Company ID will be created.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await restoreBackup(
+      restoreInfo.backupPath,
+      "new",
+      null
+    );
+
+    setRestoreInfo(null);
+
+    await loadCompanies();
+
+    alert("Company restored as a new company successfully.");
+  } catch (err) {
+    console.error("Failed to restore company as new:", err);
+    setError(String(err));
+  }
 };
 
 const handleCancelRestore = () => {

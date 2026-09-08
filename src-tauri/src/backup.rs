@@ -327,21 +327,23 @@ pub fn inspect_backup(
 
 
 
-
 pub fn restore_backup(
     backup_path: &Path,
-    database_path: &Path,
+    database_directory: &Path,
+    action: &str,
+    existing_company_path: Option<&Path>,
 ) -> Result<(), String> {
     let backup_data = fs::read(backup_path)
         .map_err(|e| format!("Failed to read backup: {}", e))?;
 
     let mut position = 0;
 
-    // Check magic
+    // Check minimum header size
     if backup_data.len() < 8 {
         return Err("Invalid CashBook backup file".to_string());
     }
 
+    // Magic
     if &backup_data[0..4] != MAGIC {
         return Err("Invalid CashBook backup file".to_string());
     }
@@ -391,7 +393,6 @@ pub fn restore_backup(
     let database_nonce = &backup_data[position..position + NONCE_SIZE];
     position += NONCE_SIZE;
 
-
     // Metadata nonce
     if backup_data.len() < position + NONCE_SIZE {
         return Err("Invalid backup file".to_string());
@@ -422,9 +423,9 @@ pub fn restore_backup(
     let encrypted_metadata =
         &backup_data[position..position + metadata_length];
 
-        position += metadata_length;
+    position += metadata_length;
 
-    // Encrypted key length
+    // Encrypted backup key length
     if backup_data.len() < position + 4 {
         return Err("Invalid backup file".to_string());
     }
@@ -451,6 +452,10 @@ pub fn restore_backup(
     // Remaining bytes = encrypted database
     let encrypted_database = &backup_data[position..];
 
+    if encrypted_database.is_empty() {
+        return Err("Backup database is empty".to_string());
+    }
+
     // Recover backup key
     let master_cipher = Aes256Gcm::new(
         Key::<Aes256Gcm>::from_slice(&MASTER_KEY),
@@ -467,22 +472,20 @@ pub fn restore_backup(
         return Err("Invalid backup encryption key".to_string());
     }
 
+    // Decrypt metadata
+    let metadata_cipher = Aes256Gcm::new(
+        Key::<Aes256Gcm>::from_slice(&backup_key),
+    );
 
-    // Decrypt backup metadata
-let metadata_cipher = Aes256Gcm::new(
-    Key::<Aes256Gcm>::from_slice(&backup_key),
-);
+    let metadata_data = metadata_cipher
+        .decrypt(
+            Nonce::from_slice(metadata_nonce),
+            encrypted_metadata,
+        )
+        .map_err(|_| "Backup metadata decryption failed".to_string())?;
 
-let metadata_data = metadata_cipher
-    .decrypt(
-        Nonce::from_slice(metadata_nonce),
-        encrypted_metadata,
-    )
-    .map_err(|_| "Backup metadata decryption failed".to_string())?;
-
-let metadata: BackupMetadata = serde_json::from_slice(&metadata_data)
-    .map_err(|_| "Invalid backup metadata".to_string())?;
-
+    let metadata: BackupMetadata = serde_json::from_slice(&metadata_data)
+        .map_err(|_| "Invalid backup metadata".to_string())?;
 
     // Decrypt database
     let database_cipher = Aes256Gcm::new(
@@ -502,15 +505,259 @@ let metadata: BackupMetadata = serde_json::from_slice(&metadata_data)
     )
     .map_err(|e| format!("Failed to decompress backup: {}", e))?;
 
-    // Make sure destination directory exists
-    if let Some(parent) = database_path.parent() {
-        fs::create_dir_all(parent)
-            .map_err(|e| format!("Failed to create database directory: {}", e))?;
+    // Validate the restored database before using it.
+let validation_path = database_directory.join(".restore_validation.db");
+
+if validation_path.exists() {
+    fs::remove_file(&validation_path)
+        .map_err(|e| format!("Failed to prepare database validation: {}", e))?;
+}
+
+fs::write(&validation_path, &database_data)
+    .map_err(|e| format!("Failed to prepare database validation: {}", e))?;
+
+let validation_connection = match rusqlite::Connection::open(&validation_path) {
+    Ok(connection) => connection,
+    Err(e) => {
+        let _ = fs::remove_file(&validation_path);
+        return Err(format!("Backup contains an invalid database: {}", e));
+    }
+};
+
+let validation_uuid: Result<String, _> = validation_connection.query_row(
+    "SELECT company_uuid FROM company ORDER BY id LIMIT 1",
+    [],
+    |row| row.get(0),
+);
+
+let validation_name: Result<String, _> = validation_connection.query_row(
+    "SELECT company_name FROM company ORDER BY id LIMIT 1",
+    [],
+    |row| row.get(0),
+);
+
+drop(validation_connection);
+
+let validation_uuid = match validation_uuid {
+    Ok(uuid) if !uuid.trim().is_empty() => uuid,
+    _ => {
+        let _ = fs::remove_file(&validation_path);
+        return Err("Backup database has invalid company information".to_string());
+    }
+};
+
+if validation_uuid != metadata.company_uuid {
+    let _ = fs::remove_file(&validation_path);
+    return Err("Backup company identity is invalid".to_string());
+}
+
+if validation_name.is_err() {
+    let _ = fs::remove_file(&validation_path);
+    return Err("Backup database has invalid company information".to_string());
+}
+
+fs::remove_file(&validation_path)
+    .map_err(|e| format!("Failed to clean up database validation: {}", e))?;
+
+    // Validate action
+    if action != "replace" && action != "new" {
+        return Err("Invalid restore action".to_string());
     }
 
-    // Write restored database
-    fs::write(database_path, database_data)
-        .map_err(|e| format!("Failed to restore database: {}", e))?;
+    // ---------------------------------------------------------
+    // REPLACE EXISTING COMPANY
+    // ---------------------------------------------------------
+    if action == "replace" {
+        let destination = existing_company_path
+            .ok_or_else(|| "Existing company path is required".to_string())?;
+
+        if !destination.exists() {
+            return Err("Existing company database was not found".to_string());
+        }
+
+        // Safety check: never replace the currently active company.
+        //
+        // This function does not look up the active company.
+        // The caller must only provide a company selected from
+        // the Landing Page.
+        let existing_connection = rusqlite::Connection::open(destination)
+            .map_err(|e| {
+                format!("Failed to open existing company: {}", e)
+            })?;
+
+        let existing_uuid: String = existing_connection
+            .query_row(
+                "SELECT company_uuid FROM company ORDER BY id LIMIT 1",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(|e| {
+                format!("Failed to read existing company identity: {}", e)
+            })?;
+
+        if existing_uuid != metadata.company_uuid {
+            return Err(
+                "Company UUID does not match the selected company"
+                    .to_string(),
+            );
+        }
+
+        drop(existing_connection);
+
+        // Write restored database to a temporary file first.
+        let temp_path = destination.with_extension("restore.tmp");
+
+        if temp_path.exists() {
+            fs::remove_file(&temp_path)
+                .map_err(|e| {
+                    format!("Failed to remove old restore file: {}", e)
+                })?;
+        }
+
+        fs::write(&temp_path, &database_data)
+            .map_err(|e| {
+                format!("Failed to prepare restored database: {}", e)
+            })?;
+
+        // Replace existing database.
+        fs::remove_file(destination)
+            .map_err(|e| {
+                format!("Failed to replace existing database: {}", e)
+            })?;
+
+        fs::rename(&temp_path, destination)
+            .map_err(|e| {
+                format!("Failed to finalize restored database: {}", e)
+            })?;
+
+        return Ok(());
+    }
+
+    // ---------------------------------------------------------
+    // RESTORE AS NEW COMPANY
+    // ---------------------------------------------------------
+
+    fs::create_dir_all(database_directory)
+        .map_err(|e| {
+            format!("Failed to create database directory: {}", e)
+        })?;
+
+    // Find the highest company ID currently used by all databases.
+    let mut highest_id: i64 = 0;
+
+    let entries = fs::read_dir(database_directory)
+        .map_err(|e| {
+            format!("Failed to read database directory: {}", e)
+        })?;
+
+    for entry in entries {
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(_) => continue,
+        };
+
+        let path = entry.path();
+
+        if path.extension().and_then(|e| e.to_str()) != Some("db") {
+            continue;
+        }
+
+        let connection = match rusqlite::Connection::open(&path) {
+            Ok(connection) => connection,
+            Err(_) => continue,
+        };
+
+        let company_id: Result<i64, _> = connection.query_row(
+            "SELECT id FROM company ORDER BY id LIMIT 1",
+            [],
+            |row| row.get(0),
+        );
+
+        if let Ok(id) = company_id {
+            if id > highest_id {
+                highest_id = id;
+            }
+        }
+    }
+
+    let new_company_id = highest_id + 1;
+    let new_company_uuid = uuid::Uuid::new_v4().to_string();
+
+    // Create a safe filename from the backup company name.
+    let mut base_name = metadata
+        .company_name
+        .trim()
+        .chars()
+        .map(|c| {
+            if c.is_alphanumeric() || c == ' ' || c == '_' || c == '-' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect::<String>();
+
+    base_name = base_name.trim().to_string();
+
+    if base_name.is_empty() {
+        base_name = "Restored Company".to_string();
+    }
+
+    // Find a unique filename.
+    let mut file_name = format!("{}.db", base_name);
+    let mut destination = database_directory.join(&file_name);
+    let mut counter = 1;
+
+    while destination.exists() {
+        file_name = format!("{}_{}.db", base_name, counter);
+        destination = database_directory.join(&file_name);
+        counter += 1;
+    }
+
+    // Write restored database.
+    fs::write(&destination, &database_data)
+        .map_err(|e| {
+            format!("Failed to create restored database: {}", e)
+        })?;
+
+    // Open restored database and assign NEW identity.
+    let connection = match rusqlite::Connection::open(&destination) {
+        Ok(connection) => connection,
+        Err(e) => {
+            let _ = fs::remove_file(&destination);
+            return Err(format!(
+                "Failed to open restored database: {}",
+                e
+            ));
+        }
+    };
+
+    let update_result = connection.execute(
+        "
+        UPDATE company
+        SET id = ?1,
+            company_uuid = ?2
+        WHERE id = (
+            SELECT id
+            FROM company
+            ORDER BY id
+            LIMIT 1
+        )
+        ",
+        rusqlite::params![new_company_id, new_company_uuid],
+    );
+
+    if let Err(e) = update_result {
+        drop(connection);
+        let _ = fs::remove_file(&destination);
+
+        return Err(format!(
+            "Failed to assign new company identity: {}",
+            e
+        ));
+    }
+
+    drop(connection);
 
     Ok(())
 }

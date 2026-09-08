@@ -241,17 +241,57 @@ fn inspect_backup(
 fn restore_backup(
     app: tauri::AppHandle,
     backup_path: String,
+    action: String,
+    existing_company_path: Option<String>,
 ) -> Result<(), String> {
     let app_data_dir = app
         .path()
         .app_data_dir()
         .map_err(|e| format!("Failed to get app data directory: {}", e))?;
 
-    let database_path = database::get_active_company(app_data_dir)?;
+
+
+
+
+
+         // A company must not be open while restoring.
+    if action == "replace" {
+        if let Ok(active_company) =
+            database::get_active_company(app_data_dir.clone())
+        {
+            if let Some(existing_path) = &existing_company_path {
+                let active_path =
+                    std::path::Path::new(&active_company);
+
+                let selected_path =
+                    std::path::Path::new(existing_path);
+
+                if active_path == selected_path {
+                    return Err(
+                        "Please close the active company before restoring it"
+                            .to_string(),
+                    );
+                }
+            }
+        }
+    }
+     // A company must not be open while restoring.
+
+
+
+
+
+
+    let database_directory =
+        database::get_database_directory_path(app_data_dir)?;
 
     backup::restore_backup(
         std::path::Path::new(&backup_path),
-        std::path::Path::new(&database_path),
+        std::path::Path::new(&database_directory),
+        &action,
+        existing_company_path
+            .as_deref()
+            .map(std::path::Path::new),
     )
 }
 
