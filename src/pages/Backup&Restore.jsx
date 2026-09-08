@@ -1,16 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { save, open } from "@tauri-apps/plugin-dialog";
+import { save } from "@tauri-apps/plugin-dialog";
 import {
   createBackup,
-  restoreBackup,
   getCompanySettings,
 } from "../services/api";
 
 function BackupRestore() {
   const navigate = useNavigate();
 
-  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleBackup = async () => {
   try {
@@ -47,54 +45,8 @@ function BackupRestore() {
 };
 
 
-const handleSelectBackup = async () => {
-  try {
-    const filePath = await open({
-      multiple: false,
-      directory: false,
-      filters: [
-        {
-          name: "CashBook Backup",
-          extensions: ["001"],
-        },
-      ],
-    });
-
-    if (!filePath) {
-      return;
-    }
-
-    setSelectedFile(filePath);
-  } catch (error) {
-    console.error("Failed to select backup:", error);
-    console.log(`Failed to select backup: ${error}`);
-  }
-};
-
-
-  const handleRestore = async () => {
-  if (!selectedFile) {
-    return;
-  }
-
-  try {
-    const confirmed = window.confirm(
-      "Restoring this backup will replace the current Cash Book data. Do you want to continue?"
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    await restoreBackup(selectedFile);
-
-    alert("Backup restored successfully.");
-
-    setSelectedFile(null);
-  } catch (error) {
-    console.error("Restore failed:", error);
-    console.log(`Restore failed: ${error}`);
-  }
+const handleRestore = async () => {
+  alert("close the company first, then try restore")
 };
 
   return (
@@ -177,16 +129,10 @@ const handleSelectBackup = async () => {
               <button
                 type="button"
                 className="btn btn-warning mt-3"
-                onClick={handleSelectBackup}
+                onClick={handleRestore}
               >
                 Restore Backup
               </button>
-
-              {selectedFile && (
-  <div className="mt-2 text-muted small">
-    Selected: {selectedFile}
-  </div>
-)}
 
               <div className="alert alert-warning mt-4 mb-0">
                 <strong>Warning:</strong> Restoring a backup will
