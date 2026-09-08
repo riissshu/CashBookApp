@@ -5,9 +5,9 @@ import {
   getDatabaseDirectory,
   setDatabaseDirectory,
   listCompanies,
-    setActiveCompany,
-    inspectBackup,
-    restoreBackup,
+  setActiveCompany,
+  inspectBackup,
+  restoreBackup,
 } from "../services/api";
 
 function LandingPage() {
@@ -18,6 +18,12 @@ function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [restoreInfo, setRestoreInfo] = useState(null);
+
+  // Confirmation modal state
+  const [confirmAction, setConfirmAction] = useState(null);
+
+  // Success message
+  const [successMessage, setSuccessMessage] = useState("");
 
   const loadCompanies = async () => {
     try {
@@ -42,6 +48,9 @@ function LandingPage() {
 
   const handleChooseFolder = async () => {
     try {
+      setError("");
+      setSuccessMessage("");
+
       const selected = await open({
         directory: true,
         multiple: false,
@@ -64,146 +73,154 @@ function LandingPage() {
   };
 
   const handleRestoreBackup = async () => {
-  try {
-    setError("");
+    try {
+      setError("");
+      setSuccessMessage("");
 
-    const selected = await open({
-      multiple: false,
-      directory: false,
-      filters: [
-        {
-          name: "CashBook Backup",
-          extensions: ["001"],
-        },
-      ],
-    });
-
-    if (!selected) {
-      return;
-    }
-
-    const metadata = await inspectBackup(selected);
-
-    const matchingUuid = companies.find(
-      (company) => company.company_uuid === metadata.company_uuid
-    );
-
-    if (!matchingUuid) {
-      setRestoreInfo({
-        backupPath: selected,
-        metadata,
-        type: "new",
+      const selected = await open({
+        multiple: false,
+        directory: false,
+        filters: [
+          {
+            name: "CashBook Backup",
+            extensions: ["001"],
+          },
+        ],
       });
 
-      return;
-    }
+      if (!selected) {
+        return;
+      }
 
-    if (matchingUuid.company_name === metadata.company_name) {
+      const metadata = await inspectBackup(selected);
+
+      const matchingUuid = companies.find(
+        (company) => company.company_uuid === metadata.company_uuid
+      );
+
+      if (!matchingUuid) {
+        setRestoreInfo({
+          backupPath: selected,
+          metadata,
+          type: "new",
+        });
+
+        return;
+      }
+
+      if (matchingUuid.company_name === metadata.company_name) {
+        setRestoreInfo({
+          backupPath: selected,
+          metadata,
+          existingCompany: matchingUuid,
+          type: "replace",
+        });
+
+        return;
+      }
+
       setRestoreInfo({
         backupPath: selected,
         metadata,
         existingCompany: matchingUuid,
-        type: "replace",
+        type: "rename",
       });
-
-      return;
+    } catch (err) {
+      console.error("Failed to inspect backup:", err);
+      setError(String(err));
     }
+  };
 
-    setRestoreInfo({
-      backupPath: selected,
-      metadata,
-      existingCompany: matchingUuid,
-      type: "rename",
-    });
-  } catch (err) {
-    console.error("Failed to inspect backup:", err);
-    setError(String(err));
-  }
-};
-
-
-const handleReplaceRestore = async () => {
-  try {
+  // Open confirmation modal for replacing an existing company
+  const handleReplaceRestore = () => {
     if (!restoreInfo?.existingCompany) {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Are you sure you want to replace this company?\n\n` +
-      `Company: ${restoreInfo.existingCompany.company_name}\n\n` +
-      `All current data in this company database will be replaced ` +
-      `by the backup.`
-    );
+    setConfirmAction("replace");
+  };
 
-    if (!confirmed) {
-      return;
-    }
-
-    await restoreBackup(
-      restoreInfo.backupPath,
-      "replace",
-      restoreInfo.existingCompany.path
-    );
-
-    setRestoreInfo(null);
-
-    await loadCompanies();
-
-    alert("Company restored successfully.");
-  } catch (err) {
-    console.error("Failed to replace company:", err);
-    setError(String(err));
-  }
-};
-
-const handleCreateNewRestore = async () => {
-  try {
+  // Open confirmation modal for restoring as a new company
+  const handleCreateNewRestore = () => {
     if (!restoreInfo) {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Restore this backup as a new company?\n\n` +
-      `Company: ${restoreInfo.metadata.company_name}\n\n` +
-      `A new Company UUID and Company ID will be created.`
-    );
+    setConfirmAction("new");
+  };
 
-    if (!confirmed) {
-      return;
+  // Actually perform the selected restore after confirmation
+  const handleConfirmRestore = async () => {
+    try {
+      setError("");
+      setSuccessMessage("");
+
+      if (!restoreInfo || !confirmAction) {
+        return;
+      }
+
+      if (confirmAction === "replace") {
+        if (!restoreInfo.existingCompany) {
+          return;
+        }
+
+        await restoreBackup(
+          restoreInfo.backupPath,
+          "replace",
+          restoreInfo.existingCompany.path
+        );
+
+        setRestoreInfo(null);
+        setConfirmAction(null);
+
+        await loadCompanies();
+
+        setSuccessMessage("Company restored successfully.");
+        return;
+      }
+
+      if (confirmAction === "new") {
+        await restoreBackup(
+          restoreInfo.backupPath,
+          "new",
+          null
+        );
+
+        setRestoreInfo(null);
+        setConfirmAction(null);
+
+        await loadCompanies();
+
+        setSuccessMessage(
+          "Company restored as a new company successfully."
+        );
+      }
+    } catch (err) {
+      console.error("Failed to restore company:", err);
+      setConfirmAction(null);
+      setError(String(err));
     }
+  };
 
-    await restoreBackup(
-      restoreInfo.backupPath,
-      "new",
-      null
-    );
+  // Close confirmation modal
+  const handleCancelConfirmation = () => {
+    setConfirmAction(null);
+  };
 
+  const handleCancelRestore = () => {
     setRestoreInfo(null);
-
-    await loadCompanies();
-
-    alert("Company restored as a new company successfully.");
-  } catch (err) {
-    console.error("Failed to restore company as new:", err);
-    setError(String(err));
-  }
-};
-
-const handleCancelRestore = () => {
-  setRestoreInfo(null);
-};
-
-
+    setConfirmAction(null);
+  };
 
   const handleOpenCompany = async (company) => {
-  try {
-    await setActiveCompany(company.path);
-    navigate("/dashboard");
-  } catch (err) {
-    console.error("Failed to open company:", err);
-    setError(String(err));
-  }
-};
+    try {
+      await setActiveCompany(company.path);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Failed to open company:", err);
+      setError(String(err));
+    }
+  };
 
   return (
     <div className="min-vh-100 bg-light d-flex align-items-center justify-content-center p-4">
@@ -264,6 +281,12 @@ const handleCancelRestore = () => {
             </div>
           )}
 
+          {successMessage && (
+            <div className="alert alert-success">
+              {successMessage}
+            </div>
+          )}
+
           {loading ? (
             <div className="text-center border rounded p-4 mb-4">
               <div className="text-muted">
@@ -315,146 +338,182 @@ const handleCancelRestore = () => {
             </div>
           )}
 
-
-
+          {/* Restore Decision */}
           {restoreInfo && (
-  <div className="card shadow-sm mb-4">
-    <div className="card-header bg-light">
-      <strong>Restore Backup</strong>
-    </div>
+            <div className="card shadow-sm mb-4">
 
-    <div className="card-body">
-      <div className="mb-3">
-        <div>
-          <strong>Backup Company:</strong>{" "}
-          {restoreInfo.metadata.company_name}
-        </div>
+              <div className="card-header bg-light">
+                <strong>Restore Backup</strong>
+              </div>
 
-        <div className="text-muted small mt-1">
-          Company UUID: {restoreInfo.metadata.company_uuid}
-        </div>
-      </div>
+              <div className="card-body">
 
-      {restoreInfo.type === "replace" && (
-        <>
-          <div className="alert alert-warning">
-            <strong>Existing company found.</strong>
-            <br />
-            The Company UUID and company name both match an existing
-            company.
-            <br />
-            <br />
-            Existing company:{" "}
-            <strong>{restoreInfo.existingCompany.company_name}</strong>
-          </div>
+                <div className="mb-3">
 
-          <div className="d-flex gap-2">
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={handleReplaceRestore}
-            >
-              Replace Existing
-            </button>
+                  <div>
+                    <strong>Backup Company:</strong>{" "}
+                    {restoreInfo.metadata.company_name}
+                  </div>
 
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleCancelRestore}
-            >
-              Cancel
-            </button>
-          </div>
-        </>
-      )}
+                  <div className="text-muted small mt-1">
+                    Company UUID: {restoreInfo.metadata.company_uuid}
+                  </div>
 
-      {restoreInfo.type === "rename" && (
-        <>
-          <div className="alert alert-warning">
-            <strong>Company identity matches, but the name is different.</strong>
-            <br />
-            <br />
+                </div>
 
-            Existing company:{" "}
-            <strong>{restoreInfo.existingCompany.company_name}</strong>
-            <br />
+                {/* Same UUID + Same Name */}
+                {restoreInfo.type === "replace" && (
+                  <>
+                    <div className="alert alert-warning">
 
-            Backup company:{" "}
-            <strong>{restoreInfo.metadata.company_name}</strong>
-            <br />
-            <br />
+                      <strong>Existing company found.</strong>
 
-            The Company UUID is the same, so this may be the same company
-            after a name change.
-          </div>
+                      <br />
 
-          <div className="d-flex gap-2 flex-wrap">
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={handleReplaceRestore}
-            >
-              Replace Existing
-            </button>
+                      The Company UUID and company name both match an
+                      existing company.
 
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleCreateNewRestore}
-            >
-              Create as New Company
-            </button>
+                      <br />
+                      <br />
 
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleCancelRestore}
-            >
-              Cancel
-            </button>
-          </div>
-        </>
-      )}
+                      Existing company:{" "}
+                      <strong>
+                        {restoreInfo.existingCompany.company_name}
+                      </strong>
 
-      {restoreInfo.type === "new" && (
-        <>
-          <div className="alert alert-info">
-            <strong>This is a different company.</strong>
-            <br />
-            <br />
+                    </div>
 
-            No existing company has the same Company UUID.
-            <br />
-            <br />
+                    <div className="d-flex gap-2">
 
-            Backup company:{" "}
-            <strong>{restoreInfo.metadata.company_name}</strong>
-          </div>
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={handleReplaceRestore}
+                      >
+                        Replace Existing
+                      </button>
 
-          <div className="d-flex gap-2">
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleCreateNewRestore}
-            >
-              Restore as New Company
-            </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={handleCancelRestore}
+                      >
+                        Cancel
+                      </button>
 
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleCancelRestore}
-            >
-              Cancel
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  </div>
-)}
+                    </div>
+                  </>
+                )}
 
+                {/* Same UUID + Different Name */}
+                {restoreInfo.type === "rename" && (
+                  <>
+                    <div className="alert alert-warning">
 
+                      <strong>
+                        Company identity matches, but the name is different.
+                      </strong>
+
+                      <br />
+                      <br />
+
+                      Existing company:{" "}
+                      <strong>
+                        {restoreInfo.existingCompany.company_name}
+                      </strong>
+
+                      <br />
+
+                      Backup company:{" "}
+                      <strong>
+                        {restoreInfo.metadata.company_name}
+                      </strong>
+
+                      <br />
+                      <br />
+
+                      The Company UUID is the same, so this may be the same
+                      company after a name change.
+
+                    </div>
+
+                    <div className="d-flex gap-2 flex-wrap">
+
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={handleReplaceRestore}
+                      >
+                        Replace Existing
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={handleCreateNewRestore}
+                      >
+                        Create as New Company
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={handleCancelRestore}
+                      >
+                        Cancel
+                      </button>
+
+                    </div>
+                  </>
+                )}
+
+                {/* Different UUID */}
+                {restoreInfo.type === "new" && (
+                  <>
+                    <div className="alert alert-info">
+
+                      <strong>This is a different company.</strong>
+
+                      <br />
+                      <br />
+
+                      No existing company has the same Company UUID.
+
+                      <br />
+                      <br />
+
+                      Backup company:{" "}
+                      <strong>
+                        {restoreInfo.metadata.company_name}
+                      </strong>
+
+                    </div>
+
+                    <div className="d-flex gap-2">
+
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={handleCreateNewRestore}
+                      >
+                        Restore as New Company
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={handleCancelRestore}
+                      >
+                        Cancel
+                      </button>
+
+                    </div>
+                  </>
+                )}
+
+              </div>
+            </div>
+          )}
 
           {/* Create New Company */}
           <div className="text-center mb-3">
@@ -468,19 +527,128 @@ const handleCancelRestore = () => {
             </button>
 
           </div>
+
+          {/* Restore Backup */}
           <div className="text-center mb-3">
-  <button
-    type="button"
-    className="btn btn-outline-primary px-4"
-    onClick={handleRestoreBackup}
-  >
-    Restore Backup
-  </button>
-</div>
+
+            <button
+              type="button"
+              className="btn btn-outline-primary px-4"
+              onClick={handleRestoreBackup}
+            >
+              Restore Backup
+            </button>
+
+          </div>
 
         </div>
 
       </div>
+
+      {/* Restore Confirmation Modal */}
+      {confirmAction && restoreInfo && (
+        <div
+          className="modal d-block"
+          tabIndex="-1"
+          role="dialog"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+        >
+
+          <div
+            className="modal-dialog modal-dialog-centered"
+            role="document"
+          >
+
+            <div className="modal-content">
+
+              <div className="modal-header">
+
+                <h5 className="modal-title">
+                  Confirm Restore
+                </h5>
+
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={handleCancelConfirmation}
+                  aria-label="Close"
+                />
+
+              </div>
+
+              <div className="modal-body">
+
+                {confirmAction === "replace" ? (
+                  <>
+                    <p>
+                      Are you sure you want to replace this company?
+                    </p>
+
+                    <p className="mb-2">
+                      <strong>
+                        Company:
+                      </strong>{" "}
+                      {restoreInfo.existingCompany.company_name}
+                    </p>
+
+                    <div className="alert alert-danger mb-0">
+                      All current data in this company database will be
+                      replaced by the backup.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      Restore this backup as a new company?
+                    </p>
+
+                    <p className="mb-2">
+                      <strong>
+                        Company:
+                      </strong>{" "}
+                      {restoreInfo.metadata.company_name}
+                    </p>
+
+                    <div className="alert alert-info mb-0">
+                      A new Company UUID and Company ID will be created.
+                    </div>
+                  </>
+                )}
+
+              </div>
+
+              <div className="modal-footer">
+
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleCancelConfirmation}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  className={
+                    confirmAction === "replace"
+                      ? "btn btn-danger"
+                      : "btn btn-primary"
+                  }
+                  onClick={handleConfirmRestore}
+                >
+                  {confirmAction === "replace"
+                    ? "Yes, Replace"
+                    : "Yes, Restore as New"}
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
     </div>
   );
