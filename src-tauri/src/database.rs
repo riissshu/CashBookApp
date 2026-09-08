@@ -2,11 +2,14 @@ use rusqlite::{Connection, OptionalExtension};
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
+use uuid::Uuid;
 
 const SETTINGS_FILE: &str = "settings.json";
 
 #[derive(Serialize)]
 pub struct CompanyInfo {
+    pub id: i64,
+    pub company_uuid: String,
     pub file_name: String,
     pub company_name: String,
     pub path: String,
@@ -145,13 +148,13 @@ pub fn list_companies_from_directory(
             Err(_) => continue,
         };
 
-        let company_name: Result<String, _> = connection.query_row(
-            "SELECT company_name FROM company ORDER BY id LIMIT 1",
+        let company_info: Result<(i64, String, String), _> = connection.query_row(
+            "SELECT id, company_uuid, company_name FROM company ORDER BY id LIMIT 1",
             [],
-            |row| row.get(0),
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
         );
 
-        if let Ok(company_name) = company_name {
+        if let Ok((id, company_uuid, company_name)) = company_info {
             let file_name = path
                 .file_name()
                 .and_then(|name| name.to_str())
@@ -159,6 +162,8 @@ pub fn list_companies_from_directory(
                 .to_string();
 
             companies.push(CompanyInfo {
+                id,
+                company_uuid,
                 file_name,
                 company_name,
                 path: path.to_string_lossy().to_string(),
@@ -227,6 +232,7 @@ pub fn create_company(
         "
         CREATE TABLE IF NOT EXISTS company (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company_uuid TEXT NOT NULL UNIQUE,
             company_name TEXT,
             opening_balance REAL NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL,
@@ -261,23 +267,29 @@ pub fn create_company(
     .map_err(|e| format!("Failed to create database tables: {}", e))?;
 
     let now = chrono::Local::now().to_rfc3339();
+    let company_uuid = Uuid::new_v4().to_string();
 
     connection
         .execute(
             "
             INSERT INTO company (
+                company_uuid,
                 company_name,
                 opening_balance,
                 created_at,
                 updated_at
             )
-            VALUES (?1, ?2, ?3, ?3)
+            VALUES (?1, ?2, ?3, ?4, ?4)
             ",
-            rusqlite::params![trimmed_name, opening_balance, now],
+            rusqlite::params![company_uuid, trimmed_name, opening_balance, now],
         )
         .map_err(|e| format!("Failed to save company: {}", e))?;
 
+        let company_id = connection.last_insert_rowid();
+
     Ok(CompanyInfo {
+        id: company_id,
+        company_uuid,
         file_name,
         company_name: trimmed_name.to_string(),
         path: path.to_string_lossy().to_string(),

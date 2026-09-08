@@ -6,6 +6,7 @@ import {
   setDatabaseDirectory,
   listCompanies,
     setActiveCompany,
+    inspectBackup,
 } from "../services/api";
 
 function LandingPage() {
@@ -15,6 +16,7 @@ function LandingPage() {
   const [databaseDirectory, setDatabaseDirectoryState] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [restoreInfo, setRestoreInfo] = useState(null);
 
   const loadCompanies = async () => {
     try {
@@ -59,6 +61,79 @@ function LandingPage() {
       setError(String(err));
     }
   };
+
+  const handleRestoreBackup = async () => {
+  try {
+    setError("");
+
+    const selected = await open({
+      multiple: false,
+      directory: false,
+      filters: [
+        {
+          name: "CashBook Backup",
+          extensions: ["001"],
+        },
+      ],
+    });
+
+    if (!selected) {
+      return;
+    }
+
+    const metadata = await inspectBackup(selected);
+
+    const matchingUuid = companies.find(
+      (company) => company.company_uuid === metadata.company_uuid
+    );
+
+    if (!matchingUuid) {
+      setRestoreInfo({
+        backupPath: selected,
+        metadata,
+        type: "new",
+      });
+
+      return;
+    }
+
+    if (matchingUuid.company_name === metadata.company_name) {
+      setRestoreInfo({
+        backupPath: selected,
+        metadata,
+        existingCompany: matchingUuid,
+        type: "replace",
+      });
+
+      return;
+    }
+
+    setRestoreInfo({
+      backupPath: selected,
+      metadata,
+      existingCompany: matchingUuid,
+      type: "rename",
+    });
+  } catch (err) {
+    console.error("Failed to inspect backup:", err);
+    setError(String(err));
+  }
+};
+
+
+  const handleReplaceRestore = async () => {
+  console.log("Replace existing company:", restoreInfo);
+};
+
+const handleCreateNewRestore = async () => {
+  console.log("Restore as new company:", restoreInfo);
+};
+
+const handleCancelRestore = () => {
+  setRestoreInfo(null);
+};
+
+
 
   const handleOpenCompany = async (company) => {
   try {
@@ -180,6 +255,147 @@ function LandingPage() {
             </div>
           )}
 
+
+
+          {restoreInfo && (
+  <div className="card shadow-sm mb-4">
+    <div className="card-header bg-light">
+      <strong>Restore Backup</strong>
+    </div>
+
+    <div className="card-body">
+      <div className="mb-3">
+        <div>
+          <strong>Backup Company:</strong>{" "}
+          {restoreInfo.metadata.company_name}
+        </div>
+
+        <div className="text-muted small mt-1">
+          Company UUID: {restoreInfo.metadata.company_uuid}
+        </div>
+      </div>
+
+      {restoreInfo.type === "replace" && (
+        <>
+          <div className="alert alert-warning">
+            <strong>Existing company found.</strong>
+            <br />
+            The Company UUID and company name both match an existing
+            company.
+            <br />
+            <br />
+            Existing company:{" "}
+            <strong>{restoreInfo.existingCompany.company_name}</strong>
+          </div>
+
+          <div className="d-flex gap-2">
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={handleReplaceRestore}
+            >
+              Replace Existing
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleCancelRestore}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      )}
+
+      {restoreInfo.type === "rename" && (
+        <>
+          <div className="alert alert-warning">
+            <strong>Company identity matches, but the name is different.</strong>
+            <br />
+            <br />
+
+            Existing company:{" "}
+            <strong>{restoreInfo.existingCompany.company_name}</strong>
+            <br />
+
+            Backup company:{" "}
+            <strong>{restoreInfo.metadata.company_name}</strong>
+            <br />
+            <br />
+
+            The Company UUID is the same, so this may be the same company
+            after a name change.
+          </div>
+
+          <div className="d-flex gap-2 flex-wrap">
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={handleReplaceRestore}
+            >
+              Replace Existing
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleCreateNewRestore}
+            >
+              Create as New Company
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleCancelRestore}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      )}
+
+      {restoreInfo.type === "new" && (
+        <>
+          <div className="alert alert-info">
+            <strong>This is a different company.</strong>
+            <br />
+            <br />
+
+            No existing company has the same Company UUID.
+            <br />
+            <br />
+
+            Backup company:{" "}
+            <strong>{restoreInfo.metadata.company_name}</strong>
+          </div>
+
+          <div className="d-flex gap-2">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleCreateNewRestore}
+            >
+              Restore as New Company
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleCancelRestore}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
+
+
           {/* Create New Company */}
           <div className="text-center mb-3">
 
@@ -192,6 +408,15 @@ function LandingPage() {
             </button>
 
           </div>
+          <div className="text-center mb-3">
+  <button
+    type="button"
+    className="btn btn-outline-primary px-4"
+    onClick={handleRestoreBackup}
+  >
+    Restore Backup
+  </button>
+</div>
 
         </div>
 

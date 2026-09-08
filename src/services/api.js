@@ -82,3 +82,22 @@ export async function updateCompanySettings(companyName, openingBalance) {
     openingBalance,
   });
 }
+
+
+export async function createBackup(backupPath) {
+  return await invoke("create_backup", {
+    backupPath,
+  });
+}
+
+export async function restoreBackup(backupPath) {
+  return await invoke("restore_backup", {
+    backupPath,
+  });
+}
+
+export async function inspectBackup(backupPath) {
+  return await invoke("inspect_backup", {
+    backupPath,
+  });
+}

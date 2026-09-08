@@ -1,5 +1,6 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 mod database;
+mod backup;
 
 use tauri::Manager;
 
@@ -207,6 +208,57 @@ fn update_company_settings(
 }
 
 
+#[tauri::command]
+fn create_backup(
+    app: tauri::AppHandle,
+    backup_path: String,
+) -> Result<(), String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    let database_path = database::get_active_company(app_data_dir)?;
+
+    backup::create_backup(
+        std::path::Path::new(&database_path),
+        std::path::Path::new(&backup_path),
+    )
+}
+
+
+#[tauri::command]
+fn inspect_backup(
+    backup_path: String,
+) -> Result<backup::BackupMetadata, String> {
+    backup::inspect_backup(
+        std::path::Path::new(&backup_path),
+    )
+}
+
+
+#[tauri::command]
+fn restore_backup(
+    app: tauri::AppHandle,
+    backup_path: String,
+) -> Result<(), String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    let database_path = database::get_active_company(app_data_dir)?;
+
+    backup::restore_backup(
+        std::path::Path::new(&backup_path),
+        std::path::Path::new(&database_path),
+    )
+}
+
+
+
+
+
 
 
 
@@ -233,6 +285,9 @@ pub fn run() {
     get_company_settings,
     update_company_settings,
     clear_active_company,
+    create_backup,
+    restore_backup,
+    inspect_backup,
 ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
