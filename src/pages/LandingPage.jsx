@@ -338,8 +338,10 @@ function LandingPage() {
             </div>
           )}
 
-          {/* Restore Decision */}
-          {restoreInfo && (
+
+          
+          {/* Restore Decision --- inline */}
+          {false && restoreInfo && (
             <div className="card shadow-sm mb-4">
 
               <div className="card-header bg-light">
@@ -514,6 +516,196 @@ function LandingPage() {
               </div>
             </div>
           )}
+
+
+          {/* Restore Decision Modal */}
+          {restoreInfo && !confirmAction && (
+            <div
+              className="modal d-block"
+              tabIndex="-1"
+              role="dialog"
+              style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            >
+              <div
+                className="modal-dialog modal-dialog-centered"
+                role="document"
+              >
+                <div className="modal-content">
+
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      Restore Backup
+                    </h5>
+
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={handleCancelRestore}
+                      aria-label="Close"
+                    />
+                  </div>
+
+                  <div className="modal-body">
+
+                    <div className="mb-3">
+                      <div>
+                        <strong>Backup Company:</strong>{" "}
+                        {restoreInfo.metadata.company_name}
+                      </div>
+
+                      <div className="text-muted small mt-1">
+                        Company UUID: {restoreInfo.metadata.company_uuid}
+                      </div>
+                    </div>
+
+                    {/* Same UUID + Same Name */}
+                    {restoreInfo.type === "replace" && (
+                      <>
+                        <div className="alert alert-warning">
+                          <strong>Existing company found.</strong>
+
+                          <br />
+
+                          The Company UUID and company name both match
+                          an existing company.
+
+                          <br />
+                          <br />
+
+                          Existing company:{" "}
+                          <strong>
+                            {restoreInfo.existingCompany.company_name}
+                          </strong>
+                        </div>
+
+                        <div className="d-flex gap-2">
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={handleReplaceRestore}
+                          >
+                            Replace Existing
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={handleCancelRestore}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Same UUID + Different Name */}
+                    {restoreInfo.type === "rename" && (
+                      <>
+                        <div className="alert alert-warning">
+                          <strong>
+                            Company identity matches, but the name is different.
+                          </strong>
+
+                          <br />
+                          <br />
+
+                          Existing company:{" "}
+                          <strong>
+                            {restoreInfo.existingCompany.company_name}
+                          </strong>
+
+                          <br />
+
+                          Backup company:{" "}
+                          <strong>
+                            {restoreInfo.metadata.company_name}
+                          </strong>
+
+                          <br />
+                          <br />
+
+                          The Company UUID is the same, so this may be the same
+                          company after a name change.
+                        </div>
+
+                        <div className="d-flex gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={handleReplaceRestore}
+                          >
+                            Replace Existing
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={handleCreateNewRestore}
+                          >
+                            Create as New Company
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={handleCancelRestore}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Different UUID */}
+                    {restoreInfo.type === "new" && (
+                      <>
+                        <div className="alert alert-info">
+                          <strong>This is a different company.</strong>
+
+                          <br />
+                          <br />
+
+                          No existing company has the same Company UUID.
+
+                          <br />
+                          <br />
+
+                          Backup company:{" "}
+                          <strong>
+                            {restoreInfo.metadata.company_name}
+                          </strong>
+                        </div>
+
+                        <div className="d-flex gap-2">
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={handleCreateNewRestore}
+                          >
+                            Restore as New Company
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={handleCancelRestore}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          )}
+
+
+
+          
 
           {/* Create New Company */}
           <div className="text-center mb-3">
