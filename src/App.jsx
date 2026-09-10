@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { checkForUpdate, installUpdate } from "./services/updater";
 
 import CreateCashBook from "./pages/CreateCashBook";
 import Dashboard from "./pages/DashBoard";
@@ -13,6 +14,21 @@ import BackupRestore from "./pages/Backup&Restore";
 
 
 function App() {
+
+  const [startupUpdate, setStartupUpdate] = useState(null);
+const [updating, setUpdating] = useState(false);
+
+useEffect(() => {
+  const checkStartupUpdate = async () => {
+    const update = await checkForUpdate();
+
+    if (update) {
+      setStartupUpdate(update);
+    }
+  };
+
+  checkStartupUpdate();
+}, []);
 
 
   return (
@@ -33,6 +49,82 @@ function App() {
         {/* Temporary fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+        {/* Auto Update Checker - Modal */}
+        {startupUpdate && (
+  <div
+    className="modal fade show d-block"
+    tabIndex="-1"
+    role="dialog"
+    style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content">
+
+        <div className="modal-header">
+          <h5 className="modal-title">
+            CashBook Update Available
+          </h5>
+
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setStartupUpdate(null)}
+            disabled={updating}
+          ></button>
+        </div>
+
+        <div className="modal-body">
+          <p className="mb-2">
+            A new version of CashBook is available.
+          </p>
+
+          <p className="mb-0">
+            <strong>New version:</strong>{" "}
+            {startupUpdate.version}
+          </p>
+
+          {startupUpdate.body && (
+            <div className="mt-3 text-muted">
+              {startupUpdate.body}
+            </div>
+          )}
+        </div>
+
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setStartupUpdate(null)}
+            disabled={updating}
+          >
+            Later
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={updating}
+            onClick={async () => {
+              setUpdating(true);
+
+              const success = await installUpdate(startupUpdate);
+
+              if (!success) {
+                setUpdating(false);
+              }
+            }}
+          >
+            {updating ? "Updating..." : "Update Now"}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
+
+
     </BrowserRouter>
   );
 }

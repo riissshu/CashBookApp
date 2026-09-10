@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { checkForUpdate, installUpdate, } from "../services/updater";
 import {
   getCompanySettings,
   updateCompanySettings,
@@ -11,6 +12,9 @@ function Settings() {
 
   const [companyName, setCompanyName] = useState("");
   const [openingBalance, setOpeningBalance] = useState("");
+  const [updateChecking, setUpdateChecking] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState("");
+  const [availableUpdate, setAvailableUpdate] = useState(null);
 
   useEffect(() => {
   const loadSettings = async () => {
@@ -50,6 +54,38 @@ const handleCloseCompany = async () => {
     console.error("Failed to save settings:", err);
   }
 };
+
+
+  const handleCheckForUpdates = async () => {
+  setUpdateChecking(true);
+  setUpdateMessage("");
+  setAvailableUpdate(null);
+
+  const update = await checkForUpdate();
+
+  if (update) {
+    setAvailableUpdate(update);
+  } else {
+    setUpdateMessage("You are using the latest version.");
+  }
+
+  setUpdateChecking(false);
+};
+
+  const handleInstallUpdate = async () => {
+  if (!availableUpdate) return;
+
+  setUpdateChecking(true);
+  setUpdateMessage("Downloading update...");
+
+  const success = await installUpdate(availableUpdate);
+
+  if (!success) {
+    setUpdateMessage("Failed to install the update.");
+    setUpdateChecking(false);
+  }
+};
+
 
   return (
     <div className="container-fluid p-4">
@@ -145,6 +181,34 @@ const handleCloseCompany = async () => {
         </div>
       </div>
 
+            {/* Application Updates */}
+      <div className="card shadow-sm mb-4">
+        <div className="card-header bg-white">
+          <h5 className="mb-0">Application Updates</h5>
+        </div>
+
+        <div className="card-body">
+          <p className="mb-3">
+            Check whether a newer version of CashBook is available.
+          </p>
+
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={handleCheckForUpdates}
+            disabled={updateChecking}
+          >
+            {updateChecking ? "Checking..." : "Check for Updates"}
+          </button>
+
+          {updateMessage && (
+            <div className="mt-3 text-muted">
+              {updateMessage}
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="row g-3 d-flex gap-2 justify-content-center mt-4 pt-4">
 
        {/* Backup & Restore  */}
@@ -169,6 +233,71 @@ const handleCloseCompany = async () => {
       </div>
 
       </div>
+
+      {availableUpdate && (
+  <div
+    className="modal fade show d-block"
+    tabIndex="-1"
+    role="dialog"
+    style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content">
+
+        <div className="modal-header">
+          <h5 className="modal-title">
+            Update Available
+          </h5>
+
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setAvailableUpdate(null)}
+            disabled={updateChecking}
+          ></button>
+        </div>
+
+        <div className="modal-body">
+          <p className="mb-2">
+            A new version of CashBook is available.
+          </p>
+
+          <p className="mb-0">
+            <strong>New version:</strong>{" "}
+            {availableUpdate.version}
+          </p>
+
+          {availableUpdate.body && (
+            <p className="mt-3 mb-0 text-muted">
+              {availableUpdate.body}
+            </p>
+          )}
+        </div>
+
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setAvailableUpdate(null)}
+            disabled={updateChecking}
+          >
+            Later
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleInstallUpdate}
+            disabled={updateChecking}
+          >
+            {updateChecking ? "Updating..." : "Update Now"}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
 
     </div>
   );
