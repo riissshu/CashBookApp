@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
 import { checkForUpdate, installUpdate, } from "../services/updater";
 import {
   getCompanySettings,
@@ -66,8 +67,12 @@ const handleCloseCompany = async () => {
   if (update) {
     setAvailableUpdate(update);
   } else {
-    setUpdateMessage("You are using the latest version.");
-  }
+  const currentVersion = await getVersion();
+
+  setUpdateMessage(
+    `You are using the latest version. Current version: ${currentVersion}`
+  );
+}
 
   setUpdateChecking(false);
 };
