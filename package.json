@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "tauri": "tauri",
-    "release": "npm run tauri build && node scripts/create-latest-json.js"
+    "tauri-release": "npm run tauri build && node scripts/release.js"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.1",
