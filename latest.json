@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
   "notes": "CashBook App",
-  "pub_date": "2026-09-11T00:00:00Z",
+  "pub_date": "2026-09-11T15:09:27.899Z",
   "platforms": {
     "windows-x86_64": {
       "url": "https://github.com/riissshu/CashBookApp/releases/download/v1.0.0/CashBook_1.0.0_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSUFFTNm0vOVFnaHljV2krazIyTkVDMThkeFpUVXR1QnQ3RlZ3Ym1EbmNscmY1OTVVOVo3OXE5aEowTkwreGpxbFBiV0N5NXZyZjlPbmxUd2lwVTJlVmZUUU0vZTFuZXdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5MDc0MTM3CWZpbGU6Q2FzaEJvb2tfMS4wLjBfeDY0LXNldHVwLmV4ZQp3blBGb2dYSVp0S1FZY1MwYWZITnkrMjN5TzE0cVYxZ3V2RWQ2R1V6RElRWWJJWE41aUo0emtkUTlDcDNERVByNkVhMzdGN0VMVnE1b0ZwNFhzekhEZz09Cg=="
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSUFFTNm0vOVFnaDllUFhha294N3Z3TG1WQ2MzbDk2aUdFSEJXeVRsdEszLzRQU2krMUczRVlUUHcwWExLSTZId0VFc1ZEOUNNS3V4bVV6TUU5Y0VnQ1E5WFBvWWFBbEFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5MTM5MzY2CWZpbGU6Q2FzaEJvb2tfMS4wLjBfeDY0LXNldHVwLmV4ZQpPbHdjdXNBdnRNSEgzT3lvT2g5V0VEUkMwT1pMcXhPWmZjZnUxZUxHRUxVUks2cmdZSkJpUi9NYTVIYWlaekVjQldNelRHaGtMQmNVdVA1TkZ1VzRDQT09Cg=="
     }
   }
 }

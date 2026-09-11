@@ -1,8 +1,12 @@
 // this script creates or updates latest.json automatically
 
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const projectRoot = path.resolve(__dirname, "..");
 
@@ -44,7 +48,7 @@ const signature = fs.readFileSync(signaturePath, "utf8").trim();
 
 const latestJson = {
   version,
-  notes: `CashBook ${version}`,
+  notes: `CashBook App`,
   pub_date: new Date().toISOString(),
   platforms: {
     "windows-x86_64": {
