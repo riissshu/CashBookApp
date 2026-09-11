@@ -31,3 +31,4 @@ zstd = "0.13"
 uuid = { version = "1", features = ["v4"] }
 tauri-plugin-updater = "2.11.0"
 tauri-plugin-process = "2.3.1"
+tauri-plugin-window-state = "2.4.1"
