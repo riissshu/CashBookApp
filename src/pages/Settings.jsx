@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
-import { checkForUpdate, installUpdate, } from "../services/updater";
+import { checkForUpdate, installUpdate, downloadUpdate,} from "../services/updater";
 import {
   getCompanySettings,
   updateCompanySettings,
@@ -16,6 +16,9 @@ function Settings() {
   const [updateChecking, setUpdateChecking] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
   const [availableUpdate, setAvailableUpdate] = useState(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [updateReady, setUpdateReady] = useState(false)
+  const [downloadedUpdate, setDownloadedUpdate] = useState(null);
 
   useEffect(() => {
   const loadSettings = async () => {
@@ -81,12 +84,24 @@ const handleCloseCompany = async () => {
   if (!availableUpdate) return;
 
   setUpdateChecking(true);
+  setDownloadProgress(0);
   setUpdateMessage("Downloading update...");
 
-  const success = await installUpdate(availableUpdate);
+  const success = await downloadUpdate(
+    availableUpdate,
+    (progress) => {
+      setDownloadProgress(progress);
+    }
+  );
 
-  if (!success) {
-    setUpdateMessage("Failed to install the update.");
+  if (success) {
+      setUpdateChecking(false);
+  setDownloadedUpdate(availableUpdate);
+  setAvailableUpdate(null);
+  setUpdateReady(true);
+  setUpdateMessage("");
+  } else {
+    setUpdateMessage("Failed to download the update.");
     setUpdateChecking(false);
   }
 };
@@ -277,6 +292,31 @@ const handleCloseCompany = async () => {
               {availableUpdate.body}
             </p>
           )}
+
+          {updateChecking && (
+  <div className="mt-4">
+    <div className="d-flex justify-content-between mb-1">
+      <span>Downloading update...</span>
+      <span>{downloadProgress}%</span>
+    </div>
+
+    <div
+      className="progress"
+      role="progressbar"
+      aria-valuenow={downloadProgress}
+      aria-valuemin="0"
+      aria-valuemax="100"
+    >
+      <div
+        className="progress-bar"
+        style={{ width: `${downloadProgress}%` }}
+      >
+        {downloadProgress}%
+      </div>
+    </div>
+  </div>
+)}
+
         </div>
 
         <div className="modal-footer">
@@ -295,7 +335,9 @@ const handleCloseCompany = async () => {
             onClick={handleInstallUpdate}
             disabled={updateChecking}
           >
-            {updateChecking ? "Updating..." : "Update Now"}
+            {updateChecking
+  ? `Downloading... ${downloadProgress}%`
+  : "Update Now"}
           </button>
         </div>
 
@@ -303,6 +345,75 @@ const handleCloseCompany = async () => {
     </div>
   </div>
 )}
+
+{updateReady && downloadedUpdate && (
+  <div
+    className="modal fade show d-block"
+    tabIndex="-1"
+    role="dialog"
+    style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content">
+
+        <div className="modal-header">
+          <h5 className="modal-title">
+            Update Ready
+          </h5>
+
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setUpdateReady(false)}
+          ></button>
+        </div>
+
+        <div className="modal-body">
+          <p className="mb-2">
+            CashBook update has been downloaded successfully.
+          </p>
+
+          <p className="mb-0">
+            <strong>New version:</strong>{" "}
+            {downloadedUpdate.version}
+          </p>
+
+          <p className="mt-3 mb-0 text-muted">
+            Restart CashBook now to install the update.
+          </p>
+        </div>
+
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setUpdateReady(false)}
+          >
+            Later
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={async () => {
+              setUpdateChecking(true);
+
+              const success = await installUpdate(downloadedUpdate);
+
+              if (!success) {
+                setUpdateChecking(false);
+              }
+            }}
+          >
+            Restart Now
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
+
 
     </div>
   );
