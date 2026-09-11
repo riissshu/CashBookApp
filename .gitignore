@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # Tauri updater signing keys
-.tauri/
+*.key
