@@ -19,14 +19,17 @@ function Settings() {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [updateReady, setUpdateReady] = useState(false)
   const [downloadedUpdate, setDownloadedUpdate] = useState(null);
+  const [version, setVersion] = useState("");
 
   useEffect(() => {
   const loadSettings = async () => {
     try {
       const data = await getCompanySettings();
+      const checkVersion = await getVersion();
 
       setCompanyName(data.company_name || "");
       setOpeningBalance(data.opening_balance ?? "");
+      setVersion(checkVersion);
     } catch (err) {
       console.error("Failed to load company settings:", err);
     }
@@ -203,8 +206,9 @@ const handleCloseCompany = async () => {
 
             {/* Application Updates */}
       <div className="card shadow-sm mb-4">
-        <div className="card-header bg-white">
+        <div className="card-header bg-white d-flex justify-content-between">
           <h5 className="mb-0">Application Updates</h5>
+          <span className="mx-2 fw-medium">Current Version :- {version} </span>
         </div>
 
         <div className="card-body">
